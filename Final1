@@ -1,0 +1,227 @@
+import javax.swing.JOptionPane;
+
+class Account {
+    String name;
+    double balance;
+
+    Account(String name, double balance) {
+        this.name = name;
+        this.balance = balance;
+    }
+}
+
+public class FinalProject1 {
+
+    static Account account1 = null;
+    static Account account2 = null;
+    static Account account3 = null;   
+
+    public static void main(String[] args) {
+
+        while (true) {
+            String menu = "ATM Machine\n\n" +
+                    "1. Open an Account\n" +
+                    "2. Deposit\n" +
+                    "3. Withdraw\n" +
+                    "4. Send Money\n" +
+                    "5. Display Accounts\n" +
+                    "6. Exit\n\n" +
+                    "Choose an option:";
+
+            int choice = getIntInput(menu);
+
+            switch (choice) {
+                case 1: openAccount(); break;
+                case 2: deposit(); break;
+                case 3: withdraw(); break;
+                case 4: sendMoney(); break;
+                case 5: displayAccounts(); break;
+                case 6: System.exit(0); break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Invalid choice.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+    }
+
+
+    static void openAccount() {
+
+        if (account1 != null && account2 != null && account3 != null) {
+            JOptionPane.showMessageDialog(null, "Maximum of 3 accounts already created.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        String name = JOptionPane.showInputDialog(null, "Enter account name:", "Machine", JOptionPane.PLAIN_MESSAGE);
+        if (name == null || name.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Name cannot be empty.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        double initialDeposit = getDoubleInput("Enter initial deposit (min 2000, max 100000):");
+
+        if (initialDeposit < 2000 || initialDeposit > 100000) {
+            JOptionPane.showMessageDialog(null, "Invalid amount. Must be 2000 to 100000.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        if (account1 == null) {
+            account1 = new Account(name, initialDeposit);
+            JOptionPane.showMessageDialog(null, "Account 1 created successfully!", "Machine", JOptionPane.PLAIN_MESSAGE);
+        }
+        else if (account2 == null) {
+            account2 = new Account(name, initialDeposit);
+            JOptionPane.showMessageDialog(null, "Account 2 created successfully!", "Machine", JOptionPane.PLAIN_MESSAGE);
+        }
+        else {
+            account3 = new Account(name, initialDeposit);
+            JOptionPane.showMessageDialog(null, "Account 3 created successfully!", "Machine", JOptionPane.PLAIN_MESSAGE);
+        }
+    }
+
+  
+    static void deposit() {
+        Account acc = chooseAccount();
+        if (acc == null) return;
+
+        double amount = getDoubleInput("Enter amount to deposit:");
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        acc.balance += amount;
+        JOptionPane.showMessageDialog(null, "Deposit successful.\nNew Balance: " + acc.balance, "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    
+    static void withdraw() {
+        Account acc = chooseAccount();
+        if (acc == null) return;
+
+        double amount = getDoubleInput("Enter amount to withdraw:");
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        if (amount > acc.balance) {
+            JOptionPane.showMessageDialog(null, "Insufficient balance.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        acc.balance -= amount;
+        JOptionPane.showMessageDialog(null, "Withdrawal successful.\nNew Balance: " + acc.balance, "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    
+    static void sendMoney() {
+
+        if (account1 == null || account2 == null) {
+            JOptionPane.showMessageDialog(null, "Need AT LEAST Account 1 and 2 to send money.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        int choice = getIntInput(
+                "Send money:\n" +
+                "1. Account1 → Account2\n" +
+                "2. Account2 → Account1\n" +
+                "3. Account2 → Account3\n" +
+                "4. Account3 → Account1\n"
+        );
+
+        double amount = getDoubleInput("Enter amount to send:");
+
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        switch (choice) {
+            case 1:
+                if (amount > account1.balance) { fail(); return; }
+                account1.balance -= amount; account2.balance += amount;
+                break;
+
+            case 2:
+                if (amount > account2.balance) { fail(); return; }
+                account2.balance -= amount; account1.balance += amount;
+                break;
+
+            case 3:
+                if (account3 == null) { missing3(); return; }
+                if (amount > account2.balance) { fail(); return; }
+                account2.balance -= amount; account3.balance += amount;
+                break;
+
+            case 4:
+                if (account3 == null) { missing3(); return; }
+                if (amount > account3.balance) { fail(); return; }
+                account3.balance -= amount; account1.balance += amount;
+                break;
+
+            default:
+                JOptionPane.showMessageDialog(null, "Invalid choice.", "Machine", JOptionPane.PLAIN_MESSAGE);
+                return;
+        }
+
+        JOptionPane.showMessageDialog(null, "Transfer successful!", "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    static void fail() {
+        JOptionPane.showMessageDialog(null, "Insufficient balance.", "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    static void missing3() {
+        JOptionPane.showMessageDialog(null, "Account 3 does not exist yet.", "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+   
+    static void displayAccounts() {
+        String result = "";
+        result += (account1 != null) ? "Account 1: " + account1.name + " | Balance: " + account1.balance + "\n" : "Account 1: [Not Created]\n";
+        result += (account2 != null) ? "Account 2: " + account2.name + " | Balance: " + account2.balance + "\n" : "Account 2: [Not Created]\n";
+        result += (account3 != null) ? "Account 3: " + account3.name + " | Balance: " + account3.balance + "\n" : "Account 3: [Not Created]\n";
+
+        JOptionPane.showMessageDialog(null, result, "Machine", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    
+    static Account chooseAccount() {
+        int c = getIntInput("Choose account:\n1. Account 1\n2. Account 2\n3. Account 3");
+
+        switch (c) {
+            case 1: if (account1 == null) return missing("Account 1"); return account1;
+            case 2: if (account2 == null) return missing("Account 2"); return account2;
+            case 3: if (account3 == null) return missing("Account 3"); return account3;
+            default:
+                JOptionPane.showMessageDialog(null, "Invalid choice.", "Machine", JOptionPane.PLAIN_MESSAGE);
+                return null;
+        }
+    }
+
+    static Account missing(String acc) {
+        JOptionPane.showMessageDialog(null, acc + " not created yet.", "Machine", JOptionPane.PLAIN_MESSAGE);
+        return null;
+    }
+
+   
+    static int getIntInput(String msg) {
+        while (true) {
+            try {
+                return Integer.parseInt(JOptionPane.showInputDialog(null, msg, "Machine", JOptionPane.PLAIN_MESSAGE));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Invalid input. Enter a number.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+    }
+
+    static double getDoubleInput(String msg) {
+        while (true) {
+            try {
+                return Double.parseDouble(JOptionPane.showInputDialog(null, msg, "Machine", JOptionPane.PLAIN_MESSAGE));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Invalid number.", "Machine", JOptionPane.PLAIN_MESSAGE);
+            }
+        }
+    }
+}
