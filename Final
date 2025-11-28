@@ -1,0 +1,222 @@
+import javax.swing.JOptionPane;
+
+class Account {
+    String name;
+    double balance;
+
+    Account(String name, double balance) {
+        this.name = name;
+        this.balance = balance;
+    }
+}
+
+public class FinalProject {
+    static Account account1 = null;
+    static Account account2 = null;
+
+    public static void main(String[] args) {
+
+        while (true) {
+            String menu = "ATM Simulation\n\n" +
+                    "1. Open an Account\n" +
+                    "2. Deposit\n" +
+                    "3. Withdraw\n" +
+                    "4. Send Money\n" +
+                    "5. Display Accounts\n" +
+                    "6. Exit\n\n" +
+                    "Choose an option:";
+
+            int choice = getIntInput(menu);
+
+            switch (choice) {
+                case 1: openAccount(); break;
+                case 2: deposit(); break;
+                case 3: withdraw(); break;
+                case 4: sendMoney(); break;
+                case 5: displayAccounts(); break;
+                case 6: System.exit(0); break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Invalid choice.");
+            }
+        }
+    }
+
+    // -------------------------
+    //   OPEN ACCOUNT
+    // -------------------------
+    static void openAccount() {
+        if (account1 != null && account2 != null) {
+            JOptionPane.showMessageDialog(null, "Maximum of 2 accounts already created.");
+            return;
+        }
+
+        String name = JOptionPane.showInputDialog("Enter account name:");
+        if (name == null || name.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Name cannot be empty.");
+            return;
+        }
+
+        double initialDeposit = getDoubleInput("Enter initial deposit (min 2000, max 100000):");
+
+        if (initialDeposit < 2000 || initialDeposit > 100000) {
+            JOptionPane.showMessageDialog(null, "Invalid amount. Must be 2000 to 100000.");
+            return;
+        }
+
+        if (account1 == null) {
+            account1 = new Account(name, initialDeposit);
+            JOptionPane.showMessageDialog(null, "Account 1 created successfully!");
+        } else {
+            account2 = new Account(name, initialDeposit);
+            JOptionPane.showMessageDialog(null, "Account 2 created successfully!");
+        }
+    }
+
+    // -------------------------
+    //       DEPOSIT
+    // -------------------------
+    static void deposit() {
+        Account acc = chooseAccount();
+        if (acc == null) return;
+
+        double amount = getDoubleInput("Enter amount to deposit:");
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.");
+            return;
+        }
+
+        acc.balance += amount;
+        JOptionPane.showMessageDialog(null, "Deposit successful.\nNew Balance: " + acc.balance);
+    }
+
+    // -------------------------
+    //       WITHDRAW
+    // -------------------------
+    static void withdraw() {
+        Account acc = chooseAccount();
+        if (acc == null) return;
+
+        double amount = getDoubleInput("Enter amount to withdraw:");
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.");
+            return;
+        }
+
+        if (amount > acc.balance) {
+            JOptionPane.showMessageDialog(null, "Insufficient balance.");
+            return;
+        }
+
+        acc.balance -= amount;
+        JOptionPane.showMessageDialog(null, "Withdrawal successful.\nNew Balance: " + acc.balance);
+    }
+
+    // -------------------------
+    //       SEND MONEY
+    // -------------------------
+    static void sendMoney() {
+        if (account1 == null || account2 == null) {
+            JOptionPane.showMessageDialog(null, "Both accounts must exist to send money.");
+            return;
+        }
+
+        int choice = getIntInput("Send money:\n1. Account1 → Account2\n2. Account2 → Account1");
+
+        double amount = getDoubleInput("Enter amount to send:");
+
+        if (amount <= 0) {
+            JOptionPane.showMessageDialog(null, "Amount must be positive.");
+            return;
+        }
+
+        if (choice == 1) {
+            if (amount > account1.balance) {
+                JOptionPane.showMessageDialog(null, "Insufficient balance in Account1.");
+                return;
+            }
+            account1.balance -= amount;
+            account2.balance += amount;
+            JOptionPane.showMessageDialog(null, "Transfer successful!");
+        }
+        else if (choice == 2) {
+            if (amount > account2.balance) {
+                JOptionPane.showMessageDialog(null, "Insufficient balance in Account2.");
+                return;
+            }
+            account2.balance -= amount;
+            account1.balance += amount;
+            JOptionPane.showMessageDialog(null, "Transfer successful!");
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "Invalid choice.");
+        }
+    }
+
+    // -------------------------
+    //    DISPLAY ACCOUNTS
+    // -------------------------
+    static void displayAccounts() {
+        String result = "";
+
+        if (account1 != null)
+            result += "Account 1: " + account1.name + " | Balance: " + account1.balance + "\n";
+        else
+            result += "Account 1: [Not Created]\n";
+
+        if (account2 != null)
+            result += "Account 2: " + account2.name + " | Balance: " + account2.balance + "\n";
+        else
+            result += "Account 2: [Not Created]\n";
+
+        JOptionPane.showMessageDialog(null, result);
+    }
+
+    // -------------------------
+    //   CHOOSE ACCOUNT HELPER
+    // -------------------------
+    static Account chooseAccount() {
+        int c = getIntInput("Choose account:\n1. Account 1\n2. Account 2");
+
+        if (c == 1) {
+            if (account1 == null) {
+                JOptionPane.showMessageDialog(null, "Account 1 not created yet.");
+                return null;
+            }
+            return account1;
+        }
+        else if (c == 2) {
+            if (account2 == null) {
+                JOptionPane.showMessageDialog(null, "Account 2 not created yet.");
+                return null;
+            }
+            return account2;
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "Invalid choice.");
+            return null;
+        }
+    }
+
+    // -------------------------
+    //   SAFE INPUT HANDLERS
+    // -------------------------
+    static int getIntInput(String msg) {
+        while (true) {
+            try {
+                return Integer.parseInt(JOptionPane.showInputDialog(msg));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Invalid input. Enter a number.");
+            }
+        }
+    }
+
+    static double getDoubleInput(String msg) {
+        while (true) {
+            try {
+                return Double.parseDouble(JOptionPane.showInputDialog(msg));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Invalid number.");
+            }
+        }
+    }
+}
