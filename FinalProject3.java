@@ -1,6 +1,6 @@
 import javax.swing.JOptionPane;
 
- class Account {
+class Account {
     String name;
     double balance;
 
@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
     }
 }
 
-// Main ATM program
 public class FinalProject3 {
     static Account account1 = null;
     static Account account2 = null;
@@ -47,6 +46,10 @@ public class FinalProject3 {
         }
     }
 
+    public static boolean isDivisibleBy100(double amount) {
+        return amount % 100 == 0;
+    }
+
     public static void openAccount() {
         if (account1 != null && account2 != null) {
             JOptionPane.showMessageDialog(null, "Maximum of 2 accounts already created.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
@@ -63,6 +66,11 @@ public class FinalProject3 {
 
         if (initialDeposit < 2000 || initialDeposit > 100000) {
             JOptionPane.showMessageDialog(null, "Invalid amount. Must be between 2000 and 100000.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        if (!isDivisibleBy100(initialDeposit)) {
+            JOptionPane.showMessageDialog(null, "Amount must be divisible by 100.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
             return;
         }
 
@@ -85,6 +93,11 @@ public class FinalProject3 {
             return;
         }
 
+        if (!isDivisibleBy100(amount)) {
+            JOptionPane.showMessageDialog(null, "Amount must be divisible by 100.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
         acc.balance += amount;
         JOptionPane.showMessageDialog(null, "Deposit successful.\nNew Balance: " + acc.balance, "ATM Machine", JOptionPane.PLAIN_MESSAGE);
     }
@@ -96,6 +109,11 @@ public class FinalProject3 {
         double amount = getDoubleInput("Enter amount to withdraw:");
         if (amount <= 0) {
             JOptionPane.showMessageDialog(null, "Amount must be positive.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        if (!isDivisibleBy100(amount)) {
+            JOptionPane.showMessageDialog(null, "Amount must be divisible by 100.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
             return;
         }
 
@@ -119,6 +137,11 @@ public class FinalProject3 {
 
         if (amount <= 0) {
             JOptionPane.showMessageDialog(null, "Amount must be positive.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
+            return;
+        }
+
+        if (!isDivisibleBy100(amount)) {
+            JOptionPane.showMessageDialog(null, "Amount must be divisible by 100.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
             return;
         }
 
@@ -193,7 +216,7 @@ public class FinalProject3 {
         while (true) {
             try {
                 return Double.parseDouble(JOptionPane.showInputDialog(null, msg, "ATM Machine", JOptionPane.PLAIN_MESSAGE));
-            } catch (Exception ex) {
+            } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Invalid number.", "ATM Machine", JOptionPane.PLAIN_MESSAGE);
             }
         }
