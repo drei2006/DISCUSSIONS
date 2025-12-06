@@ -1,0 +1,565 @@
+import javafx.application.Application;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class FullAccountSystem2 extends Application {
+
+    // Models 
+    public static class User {
+        String username, password;
+        public User(String u, String p){ username = u; password = p; }
+    }
+
+    public static class Account {
+        private final IntegerProperty id = new SimpleIntegerProperty();
+        private final StringProperty name = new SimpleStringProperty();
+        private final StringProperty type = new SimpleStringProperty(); // Asset, Liability, Equity, Revenue, Expense
+
+        public Account(int id, String name, String type){ this.id.set(id); this.name.set(name); this.type.set(type); }
+        public int getId(){ return id.get(); }
+        public String getName(){ return name.get(); }
+        public String getType(){ return type.get(); }
+        @Override public String toString(){ return getName() + " (" + getType() + ")"; }
+    }
+
+    public static class LineItem {
+        private final Account account;
+        private final double debit;
+        private final double credit;
+        public LineItem(Account account, double debit, double credit){ this.account = account; this.debit = debit; this.credit = credit; }
+        public Account getAccount(){ return account; }
+        public double getDebit(){ return debit; }
+        public double getCredit(){ return credit; }
+    }
+
+    public static class TransactionRecord {
+        private final int id;
+        private final LocalDate date;  
+        private final String description;
+        private final List<LineItem> lines;
+        public TransactionRecord(int id, LocalDate date, String desc, List<LineItem> lines){ this.id=id; this.date=date; this.description=desc; this.lines = lines; }
+        public int getId(){ return id; }
+        public LocalDate getDate(){ return date; }
+        public String getDescription(){ return description; }
+        public List<LineItem> getLines(){ return lines; }
+        public double totalDebit(){ return lines.stream().mapToDouble(LineItem::getDebit).sum(); }
+        public double totalCredit(){ return lines.stream().mapToDouble(LineItem::getCredit).sum(); }
+    }
+
+    public static class JournalRow {
+        private final IntegerProperty txnId = new SimpleIntegerProperty();
+        private final StringProperty date = new SimpleStringProperty();
+        private final StringProperty account = new SimpleStringProperty();
+        private final DoubleProperty debit = new SimpleDoubleProperty();
+        private final DoubleProperty credit = new SimpleDoubleProperty();
+        private final StringProperty description = new SimpleStringProperty();
+        public JournalRow(int id, LocalDate d, String acct, double dr, double cr, String desc){
+            this.txnId.set(id); this.date.set(d.format(DateTimeFormatter.ISO_DATE)); this.account.set(acct);
+            this.debit.set(dr); this.credit.set(cr); this.description.set(desc);
+        }
+        public int getTxnId(){ return txnId.get(); }
+        public String getDate(){ return date.get(); }
+        public String getAccount(){ return account.get(); }
+        public double getDebit(){ return debit.get(); }
+        public double getCredit(){ return credit.get(); }
+        public String getDescription(){ return description.get(); }
+    }
+
+    public static class LedgerRow {
+        private final StringProperty account = new SimpleStringProperty();
+        private final StringProperty date = new SimpleStringProperty();
+        private final StringProperty description = new SimpleStringProperty();
+        private final DoubleProperty debit = new SimpleDoubleProperty();
+        private final DoubleProperty credit = new SimpleDoubleProperty();
+        private final DoubleProperty balance = new SimpleDoubleProperty();
+        public LedgerRow(String acct, LocalDate d, String desc, double dr, double cr, double bal){
+            this.account.set(acct); this.date.set(d.format(DateTimeFormatter.ISO_DATE)); this.description.set(desc);
+            this.debit.set(dr); this.credit.set(cr); this.balance.set(bal);
+        }
+        public String getAccount(){ return account.get(); }
+        public String getDate(){ return date.get(); }
+        public String getDescription(){ return description.get(); }
+        public double getDebit(){ return debit.get(); }
+        public double getCredit(){ return credit.get(); }
+        public double getBalance(){ return balance.get(); }
+    }
+
+    // Data stores 
+    private final User demoUser = new User("admin","1");
+    private final User demoUser1 = new User("admin1","1");
+    private final ObservableList<Account> accounts = FXCollections.observableArrayList();
+    private final ObservableList<TransactionRecord> transactions = FXCollections.observableArrayList();
+    private final ObservableList<JournalRow> journalRows = FXCollections.observableArrayList();
+    private final ObservableList<LedgerRow> ledgerRows = FXCollections.observableArrayList();
+
+    private int nextAccountId = 1;
+    private int nextTransactionId = 1;
+
+    // Application start 
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Full Account System");
+
+        // Seed accounts (the list you requested)
+        seedDefaultAccounts();
+
+        // Login Scene
+        GridPane loginGrid = new GridPane();
+        loginGrid.setPadding(new Insets(18));
+        loginGrid.setHgap(10); loginGrid.setVgap(10);
+        loginGrid.setStyle("-fx-background-color: linear-gradient(to bottom, #0b3d91, #f4f6f8);");
+
+        Label lblTitle = new Label("FX Account System");
+        lblTitle.setStyle("-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;");
+        GridPane.setColumnSpan(lblTitle, 2);
+        loginGrid.add(lblTitle, 0, 0);
+
+        Label userLabel = new Label("Username:");
+        TextField userField = new TextField();
+        Label passLabel = new Label("Password:");
+        PasswordField passField = new PasswordField();
+        Button loginBtn = new Button("Login");
+        loginBtn.setStyle("-fx-background-color: #00a896; -fx-text-fill: white; -fx-font-weight: bold;");
+        Label loginMsg = new Label();
+
+        loginGrid.add(userLabel, 0, 1); loginGrid.add(userField, 1, 1);
+        loginGrid.add(passLabel, 0, 2); loginGrid.add(passField, 1, 2);
+        loginGrid.add(loginBtn, 1, 3);
+        loginGrid.add(loginMsg, 1, 4);
+
+        Scene loginScene = new Scene(loginGrid, 420, 260);
+
+        // Main App UI (tabs)
+        TabPane tabPane = new TabPane();
+        tabPane.setTabMinWidth(120);
+
+        Tab accountsTab = new Tab("Accounts", buildAccountsPane());
+        accountsTab.setClosable(false);
+        Tab newTxnTab = new Tab("New Transaction", buildNewTransactionPane());
+        newTxnTab.setClosable(false);
+        Tab txnsTab = new Tab("Transactions", buildTransactionsPane());
+        txnsTab.setClosable(false);
+        Tab journalTab = new Tab("General Journal", buildJournalPane());
+        journalTab.setClosable(false);
+        Tab ledgerTab = new Tab("General Ledger", buildLedgerPane());
+        ledgerTab.setClosable(false);
+        Tab bsTab = new Tab("Balance Sheet", buildBalanceSheetPane());
+        bsTab.setClosable(false);
+
+        tabPane.getTabs().addAll(accountsTab, newTxnTab, txnsTab, journalTab, ledgerTab, bsTab);
+
+        BorderPane mainRoot = new BorderPane();
+        HBox top = buildTopBar();
+        mainRoot.setTop(top);
+        mainRoot.setCenter(tabPane);
+        Scene mainScene = new Scene(mainRoot, 1000, 640);
+
+        // Login action
+        loginBtn.setOnAction(e -> {
+            String u = userField.getText().trim();
+            String p = passField.getText().trim();
+            if(u.equals(demoUser.username) && p.equals(demoUser.password)
+          || u.equals(demoUser1.username) && p.equals(demoUser1.password)){
+               
+                primaryStage.setScene(mainScene);
+                loginMsg.setText("");
+            } else {
+                loginMsg.setText("Login failed - try admin / 1  \n try admin1 / 1");
+            }
+        });
+
+        primaryStage.setScene(loginScene);
+        primaryStage.show();
+    }
+
+    // UI builder methods  
+
+    private HBox buildTopBar(){
+        HBox h = new HBox();
+        h.setPadding(new Insets(12));
+        h.setSpacing(10);
+        h.setStyle("-fx-background-color: #0b3d91;");
+        Label title = new Label("FX Account System");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+        h.getChildren().addAll(title);
+        return h;
+    }
+//account
+    private Pane buildAccountsPane(){
+        VBox v = new VBox(10);
+        v.setPadding(new Insets(12));
+
+        TableView<Account> tbl = new TableView<>(accounts);
+        TableColumn<Account,Integer> idCol = new TableColumn<>("ID"); idCol.setCellValueFactory(new PropertyValueFactory<>("id")); idCol.setPrefWidth(60);
+        TableColumn<Account,String> nameCol = new TableColumn<>("Name"); nameCol.setCellValueFactory(new PropertyValueFactory<>("name")); nameCol.setPrefWidth(300);
+        TableColumn<Account,String> typeCol = new TableColumn<>("Type"); typeCol.setCellValueFactory(new PropertyValueFactory<>("type")); typeCol.setPrefWidth(150);
+        tbl.getColumns().addAll(idCol,nameCol,typeCol);
+        tbl.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        HBox form = new HBox(8);
+        TextField nameField = new TextField(); nameField.setPromptText("Account name");
+        ComboBox<String> typeBox = new ComboBox<>(); typeBox.getItems().addAll("Asset","Liability","Equity","Revenue","Expense"); typeBox.getSelectionModel().selectFirst();
+        Button addBtn = new Button("Add Account"); addBtn.setStyle("-fx-background-color: #00a896; -fx-text-fill: white;");
+        addBtn.setOnAction(e -> {
+            String name = nameField.getText().trim(); String type = typeBox.getSelectionModel().getSelectedItem();
+            if(!name.isEmpty()){
+                accounts.add(new Account(nextAccountId++, name, type));
+                nameField.clear();
+            }
+        });
+
+        form.getChildren().addAll(nameField, typeBox, addBtn);
+        v.getChildren().addAll(tbl, form);
+        return v;
+    }
+
+// new transaction
+    private Pane buildNewTransactionPane(){
+        VBox v = new VBox(8);
+        v.setPadding(new Insets(12));
+
+        DatePicker datePicker = new DatePicker(LocalDate.now());
+        TextField descField = new TextField(); descField.setPromptText("Transaction description");
+
+        VBox linesBox = new VBox(6);
+        linesBox.setPadding(new Insets(6));
+        linesBox.setStyle("-fx-border-color: #e0e6ef; -fx-border-width: 1px; -fx-padding: 6px;");
+
+        Button addLineBtn = new Button("Add Line Item"); addLineBtn.setStyle("-fx-border-color: #0b3d91;");
+        addLineBtn.setOnAction(e -> linesBox.getChildren().add(buildLineItemRow(linesBox)));
+
+        Button postBtn = new Button("Post Transaction"); postBtn.setStyle("-fx-background-color: #00a896; -fx-text-fill: white;");
+        Label msg = new Label();
+
+        postBtn.setOnAction(e -> {
+            LocalDate date = datePicker.getValue();
+            String desc = descField.getText().trim();
+            List<LineItem> items = new ArrayList<>();
+            for(javafx.scene.Node node : linesBox.getChildren()){
+                if(node instanceof HBox){
+                    HBox row = (HBox) node;
+                    @SuppressWarnings("unchecked")
+                    ComboBox<Account> acctBox = (ComboBox<Account>) row.getChildren().get(0);
+                    TextField drField = (TextField) row.getChildren().get(1);
+                    TextField crField = (TextField) row.getChildren().get(2);
+                    Account acct = acctBox.getValue();
+                    double dr = parseDoubleSafe(drField.getText());
+                    double cr = parseDoubleSafe(crField.getText());
+                    if(acct!=null && (dr>0 || cr>0)) items.add(new LineItem(acct, dr, cr));
+                }
+            }
+            if(items.isEmpty()){ msg.setText("Add at least one line item."); return; }
+            double totDr = items.stream().mapToDouble(LineItem::getDebit).sum();
+            double totCr = items.stream().mapToDouble(LineItem::getCredit).sum();
+            if(Math.abs(totDr - totCr) > 0.0001){ msg.setText(String.format("Debits(%.2f) must equal Credits(%.2f)", totDr, totCr)); return; }
+
+            TransactionRecord tr = new TransactionRecord(nextTransactionId++, date, desc, items);
+            transactions.add(tr);
+            appendToJournal(tr);
+            rebuildLedger();
+            msg.setText("Transaction posted.");
+            descField.clear(); linesBox.getChildren().clear();
+            linesBox.getChildren().add(buildLineItemRow(linesBox)); 
+        });
+
+        linesBox.getChildren().add(buildLineItemRow(linesBox));
+
+        v.getChildren().addAll(new Label("Date:"), datePicker, new Label("Description:"), descField,
+                new Label("Line Items (select account, enter Debit or Credit):"), linesBox, addLineBtn, postBtn, msg);
+        return v;
+    }
+
+    private HBox buildLineItemRow(VBox linesBox){
+        HBox row = new HBox(8);
+        ComboBox<Account> acctBox = new ComboBox<>(accounts);
+        acctBox.setPrefWidth(320);
+        acctBox.setPromptText("Choose account");
+        acctBox.setCellFactory(lv -> new ListCell<Account>(){
+            @Override public void updateItem(Account item, boolean empty){ super.updateItem(item, empty); setText(empty||item==null?null:item.getName()+" ("+item.getType()+")"); }
+        });
+        acctBox.setButtonCell(new ListCell<Account>(){ @Override public void updateItem(Account item, boolean empty){ super.updateItem(item, empty); setText(empty||item==null?null:item.getName()+" ("+item.getType()+")"); }});
+
+        TextField debitField = new TextField(); debitField.setPromptText("Debit"); debitField.setPrefWidth(120);
+        TextField creditField = new TextField(); creditField.setPromptText("Credit"); creditField.setPrefWidth(120);
+
+        Button remove = new Button("Remove"); remove.setOnAction(e -> linesBox.getChildren().remove(row));
+
+        row.getChildren().addAll(acctBox, debitField, creditField, remove);
+        return row;
+    }
+
+// transaction
+    private Pane buildTransactionsPane(){
+        VBox v = new VBox(8); v.setPadding(new Insets(12));
+        TableView<TransactionRecord> tbl = new TableView<>(transactions);
+
+        TableColumn<TransactionRecord,Integer> idCol = new TableColumn<>("ID"); idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<TransactionRecord,String> dateCol = new TableColumn<>("Date"); dateCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDate().toString()));
+        TableColumn<TransactionRecord,String> descCol = new TableColumn<>("Description"); descCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getDescription()));
+        TableColumn<TransactionRecord,String> totalCol = new TableColumn<>("Total"); totalCol.setCellValueFactory(cd -> new SimpleStringProperty(String.format("%.2f", cd.getValue().totalDebit())));
+
+        tbl.getColumns().addAll(idCol,dateCol,descCol,totalCol);
+        tbl.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TextArea detail = new TextArea(); detail.setEditable(false); detail.setPrefRowCount(8);
+        tbl.getSelectionModel().selectedItemProperty().addListener((obs,oldV,newV)->{
+            if(newV==null){ detail.clear(); return; }
+            StringBuilder sb = new StringBuilder();
+            sb.append("Transaction #").append(newV.getId()).append(" - ").append(newV.getDate()).append("\n");
+            sb.append(newV.getDescription()).append("\n\n");
+            sb.append(String.format("%-30s %-10s %-10s\n","Account","Debit","Credit"));
+            for(LineItem li : newV.getLines()){
+                sb.append(String.format("%-30s %-10.2f %-10.2f\n", li.getAccount().getName(), li.getDebit(), li.getCredit()));
+            }
+            sb.append(String.format("\nTotal Debit: %.2f\nTotal Credit: %.2f", newV.totalDebit(), newV.totalCredit()));
+            detail.setText(sb.toString());
+        });
+
+        v.getChildren().addAll(tbl, new Label("Details:"), detail);
+        return v;
+    }
+    
+// journal
+    private Pane buildJournalPane(){
+        VBox v = new VBox(8); v.setPadding(new Insets(12));
+        TableView<JournalRow> tbl = new TableView<>(journalRows);
+
+        TableColumn<JournalRow,Integer> txnCol = new TableColumn<>("Txn#"); txnCol.setCellValueFactory(new PropertyValueFactory<>("txnId"));
+        TableColumn<JournalRow,String> dateCol = new TableColumn<>("Date"); dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        TableColumn<JournalRow,String> acctCol = new TableColumn<>("Account Title"); acctCol.setCellValueFactory(new PropertyValueFactory<>("account"));
+        TableColumn<JournalRow,Double> drCol = new TableColumn<>("Debit"); drCol.setCellValueFactory(new PropertyValueFactory<>("debit"));
+        TableColumn<JournalRow,Double> crCol = new TableColumn<>("Credit"); crCol.setCellValueFactory(new PropertyValueFactory<>("credit"));
+        TableColumn<JournalRow,String> descCol = new TableColumn<>("Description"); descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        tbl.getColumns().addAll(txnCol,dateCol,acctCol,drCol,crCol,descCol);
+        tbl.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        v.getChildren().addAll(tbl);
+        return v;
+    }
+
+// ledger
+    private Pane buildLedgerPane(){
+        VBox v = new VBox(8); v.setPadding(new Insets(12));
+        TableView<LedgerRow> tbl = new TableView<>(ledgerRows);
+
+        TableColumn<LedgerRow,String> acctCol = new TableColumn<>("Account"); acctCol.setCellValueFactory(new PropertyValueFactory<>("account"));
+        TableColumn<LedgerRow,String> dateCol = new TableColumn<>("Date"); dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+        TableColumn<LedgerRow,String> descCol = new TableColumn<>("Description"); descCol.setCellValueFactory(new PropertyValueFactory<>("description"));
+        TableColumn<LedgerRow,Double> drCol = new TableColumn<>("Debit"); drCol.setCellValueFactory(new PropertyValueFactory<>("debit"));
+        TableColumn<LedgerRow,Double> crCol = new TableColumn<>("Credit"); crCol.setCellValueFactory(new PropertyValueFactory<>("credit"));
+        TableColumn<LedgerRow,Double> balCol = new TableColumn<>("Balance"); balCol.setCellValueFactory(new PropertyValueFactory<>("balance"));
+
+        tbl.getColumns().addAll(acctCol,dateCol,descCol,drCol,crCol,balCol);
+        tbl.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        v.getChildren().addAll(tbl);
+        return v;
+    }
+
+// balance sheet
+    private Pane buildBalanceSheetPane(){
+        VBox v = new VBox(8); v.setPadding(new Insets(12));
+        Button refresh = new Button("Refresh"); refresh.setStyle("-fx-border-color: #0b3d91;");
+        TextArea out = new TextArea(); out.setEditable(false); out.setPrefRowCount(18);
+        refresh.setOnAction(e -> out.setText(buildBalanceSheetText()));
+        out.setText(buildBalanceSheetText());
+        v.getChildren().addAll(refresh, out);
+        return v;
+    }
+
+    // Helpers (logic)
+
+    private void seedDefaultAccounts(){
+        // Clear first if called multiple times
+        accounts.clear();
+        nextAccountId = 1;
+        // Assets
+        accounts.add(new Account(nextAccountId++, "Cash", "Asset"));
+        accounts.add(new Account(nextAccountId++, "Accounts Receivable", "Asset"));
+        accounts.add(new Account(nextAccountId++, "Supplies", "Asset"));
+        accounts.add(new Account(nextAccountId++, "Equipment", "Asset"));
+        // Liabilities
+        accounts.add(new Account(nextAccountId++, "Accounts Payable", "Liability"));
+        accounts.add(new Account(nextAccountId++, "Notes Payable", "Liability"));
+        // Equity
+        accounts.add(new Account(nextAccountId++, "Owner's Capital", "Equity"));
+        accounts.add(new Account(nextAccountId++, "Owner's Drawings", "Equity"));
+        // Revenue
+        accounts.add(new Account(nextAccountId++, "Service Revenue", "Revenue"));
+        accounts.add(new Account(nextAccountId++, "Sales Revenue", "Revenue"));
+        // Expenses
+        accounts.add(new Account(nextAccountId++, "Rent Expense", "Expense"));
+        accounts.add(new Account(nextAccountId++, "Salaries Expense", "Expense"));
+        accounts.add(new Account(nextAccountId++, "Utilities Expense", "Expense"));
+    }
+
+    private void appendToJournal(TransactionRecord tr){
+        for(LineItem li : tr.getLines()){
+            journalRows.add(new JournalRow(tr.getId(), tr.getDate(), li.getAccount().getName(), li.getDebit(), li.getCredit(), tr.getDescription()));
+        }
+    }
+
+    private void rebuildLedger(){
+        ledgerRows.clear();
+        // Group journal rows by account then sort by date
+        Map<String, List<JournalRow>> byAcct = journalRows.stream().collect(Collectors.groupingBy(JournalRow::getAccount));
+        for(String acctName : byAcct.keySet()){
+            List<JournalRow> rows = byAcct.get(acctName).stream().sorted(Comparator.comparing(JournalRow::getDate)).collect(Collectors.toList());
+            double bal = 0.0;
+            Account acc = findAccountByName(acctName);
+            boolean normalDebit = acc!=null && (acc.getType().equalsIgnoreCase("Asset") || acc.getType().equalsIgnoreCase("Expense"));
+            for(JournalRow jr : rows){
+                double dr = jr.getDebit(), cr = jr.getCredit();
+                if(normalDebit) bal += dr - cr; else bal += cr - dr;
+                double displayBal = (acc==null) ? bal : (acc.getType().equalsIgnoreCase("Asset") || acc.getType().equalsIgnoreCase("Expense") ? bal : -bal);
+                ledgerRows.add(new LedgerRow(acctName, LocalDate.parse(jr.getDate()), jr.getDescription(), dr, cr, displayBal));
+            }
+        }
+    }
+
+    private Account findAccountByName(String name){
+        for(Account a : accounts) if(a.getName().equals(name)) return a;
+        return null;
+    }
+
+    private double parseDoubleSafe(String s){
+        try{ return Double.parseDouble(s.trim()); }catch(Exception ex){ return 0.0; }
+    }
+
+
+//BALANCESHEET
+private String buildBalanceSheetText(){
+
+    Map<String, Double> debitMap = new HashMap<>();
+    Map<String, Double> creditMap = new HashMap<>();
+
+    for(Account a : accounts){
+        debitMap.put(a.getName(), 0.0);
+        creditMap.put(a.getName(), 0.0);
+    }
+
+    for(JournalRow jr : journalRows){
+        debitMap.put(jr.getAccount(),
+                debitMap.get(jr.getAccount()) + jr.getDebit());
+
+        creditMap.put(jr.getAccount(),
+                creditMap.get(jr.getAccount()) + jr.getCredit());
+    }
+
+    StringBuilder sb = new StringBuilder();
+    sb.append("Balance Sheet as of ").append(LocalDate.now()).append("\n\n");
+
+    double totalAssetDebit=0, totalAssetCredit=0;
+    double totalLiabDebit=0, totalLiabCredit=0;
+    double totalEqDebit=0, totalEqCredit=0;
+
+    sb.append("ASSETS:\n");
+    sb.append(String.format("%-30s %-15s %-15s %-15s\n", "Account", "Debit", "Credit", "Balance"));
+
+    for(Account a : accounts)
+        if(a.getType().equalsIgnoreCase("Asset")){
+
+            double dr = debitMap.getOrDefault(a.getName(), 0.0);
+            double cr = creditMap.getOrDefault(a.getName(), 0.0);
+            double bal = dr - cr;
+
+            totalAssetDebit += dr;
+            totalAssetCredit += cr;
+
+            sb.append(String.format("%-30s %-15.2f %-15.2f %-15.2f\n", a.getName(), dr, cr, bal));
+        }
+
+    sb.append(String.format("\n%-30s %-15.2f %-15.2f %-15.2f\n\n",
+            "TOTAL ASSETS:", totalAssetDebit, totalAssetCredit, totalAssetDebit - totalAssetCredit));
+
+
+
+    sb.append("LIABILITIES:\n");
+    sb.append(String.format("%-30s %-15s %-15s %-15s\n", "Account", "Debit", "Credit", "Balance"));
+
+    for(Account a : accounts)
+        if(a.getType().equalsIgnoreCase("Liability")){
+
+            double dr = debitMap.getOrDefault(a.getName(), 0.0);
+            double cr = creditMap.getOrDefault(a.getName(), 0.0);
+            double bal = cr - dr;
+
+            totalLiabDebit += dr;
+            totalLiabCredit += cr;
+
+            sb.append(String.format("%-30s %-15.2f %-15.2f %-15.2f\n", a.getName(), dr, cr, bal));
+        }
+
+    sb.append(String.format("\n%-30s %-15.2f %-15.2f %-15.2f\n\n",
+            "TOTAL LIABILITIES:", totalLiabDebit, totalLiabCredit, totalLiabCredit - totalLiabDebit));
+
+
+
+    sb.append("EQUITY:\n");
+    sb.append(String.format("%-30s %-15s %-15s %-15s\n", "Account", "Debit", "Credit", "Balance"));
+
+    for(Account a : accounts)
+        if(a.getType().equalsIgnoreCase("Equity")){
+
+            double dr = debitMap.getOrDefault(a.getName(), 0.0);
+            double cr = creditMap.getOrDefault(a.getName(), 0.0);
+            double bal = cr - dr;
+
+            totalEqDebit += dr;
+            totalEqCredit += cr;
+
+            sb.append(String.format("%-30s %-15.2f %-15.2f %-15.2f\n", a.getName(), dr, cr, bal));
+        }
+
+
+
+    sb.append("\nINCOME STATEMENT EFFECTS (To compute final equity):\n\n");
+
+    double revenue = 0;
+    double expense = 0;
+
+    for(Account a : accounts){
+
+        double dr = debitMap.getOrDefault(a.getName(), 0.0);
+        double cr = creditMap.getOrDefault(a.getName(), 0.0);
+
+        if(a.getType().equalsIgnoreCase("Revenue")) {
+            revenue += (cr - dr);
+        }
+
+        if(a.getType().equalsIgnoreCase("Expense")) {
+            expense += (dr - cr);
+        }
+    }
+
+    double netIncome = revenue - expense;
+    double totalEquityBalance = (totalEqCredit - totalEqDebit) + netIncome;
+
+    sb.append(String.format("Total Revenue: %.2f\n", revenue));
+    sb.append(String.format("Total Expenses: %.2f\n", expense));
+    sb.append(String.format("NET INCOME: %.2f\n\n", netIncome));
+
+    sb.append(String.format("ENDING EQUITY TOTAL: %.2f\n\n", totalEquityBalance));
+
+    sb.append("\nACCOUNTING EQUATION CHECK:\n");
+    double totalAssets = totalAssetDebit - totalAssetCredit;
+    double totalLiabilities = totalLiabCredit - totalLiabDebit;
+
+    sb.append(String.format("Assets = %.2f\n", totalAssets));
+    sb.append(String.format("Liabilities + Equity = %.2f\n", totalLiabilities + totalEquityBalance));
+    return sb.toString();
+}
+}
