@@ -1,0 +1,59 @@
+public class Person {
+    private String firstName;
+    private String lastName;
+ 
+    public Person(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+
+    public String getLastName() {
+        return lastName;
+    }
+
+
+    public static void main(String[] args) {
+  
+        Person person = new Person("Keith", "Alaan");
+
+        System.out.println("First Name: " + person.getFirstName());
+        System.out.println("Last Name: " + person.getLastName());
+    }
+}
+
+
+
+public class Couple {
+
+    private Person bride;
+    private Person groom;
+
+    public Couple(Person bride, Person groom) {
+        this.bride = bride;
+        this.groom = groom;
+    }
+
+    public Person getBride() {
+        return bride;
+    }
+
+    public Person getGroom() {
+        return groom;
+    }
+
+    public static void main(String[] args) {
+        Person bride = new Person("Anna", "Smith");
+        Person groom = new Person("John", "Doe");
+
+        Couple couple = new Couple(bride, groom);
+
+        System.out.println("Bride: " + couple.getBride().getFirstName() + " " + couple.getBride().getLastName());
+        System.out.println("Groom: " + couple.getGroom().getFirstName() + " " + couple.getGroom().getLastName());
+    }
+}
