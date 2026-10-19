@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A creative personal portfolio website.">
+  <title>My Little Corner | Personal Portfolio</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#home" aria-label="Go to homepage"><span class="brand-mark">KMA</span><span data-name>YOUR NAME</span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <nav id="navMenu" aria-label="Main navigation">
+      <a class="nav-link active" href="#home">Home</a>
+      <a class="nav-link" href="#about">About</a>
+      <a class="nav-link" href="#skills">Skills</a>
+      <a class="nav-link" href="#hobbies">Hobbies</a>
+      <a class="nav-link" href="#contact">Contact</a>
+    </nav>
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle light and dark theme" title="Toggle theme">☾</button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-glow glow-one"></div><div class="hero-glow glow-two"></div>
+      <div class="hero-inner">
+        <div class="portrait-wrap">
+          <div class="portrait-ring"><img src="assets/portfolio-preview.png" alt="Decorative portfolio preview — replace with your own photo" class="portrait-img"></div>
+          <span class="spark spark-one">✦</span><span class="spark spark-two">●</span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">HELLO, WORLD <span class="wave">👋</span></p>
+          <h1>I'm <span class="gradient-text" data-name>YOUR NAME</span></h1>
+          <h2>Aspiring IT Professional <span>·</span> Problem Solver <span>·</span> Lifelong Learner</h2>
+          <p class="hero-description">I enjoy exploring technology, creating useful things, and turning curious ideas into reality. Welcome to my little corner of the internet!</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#about">Get to know me <span>↓</span></a>
+            <a class="btn btn-outline" href="#hobbies">Explore my world <span>↗</span></a>
+          </div>
+          <div class="mini-note"><span class="status-dot"></span> Currently learning, building, and growing</div>
+        </div>
+        <div class="handwritten" aria-hidden="true">good vibes<br>only ✦</div>
+      </div>
+      <a href="#about" class="scroll-cue" aria-label="Scroll to About section"><span></span> SCROLL TO EXPLORE</a>
+    </section>
+
+    <section class="section about-section" id="about">
+      <div class="section-grid">
+        <article class="about-copy reveal">
+          <p class="section-kicker">A LITTLE INTRODUCTION</p>
+          <h2><span class="section-icon">✧</span> About Me</h2>
+          <p>Hi! I'm <strong data-name>YOUR NAME</strong>, a curious and motivated student who enjoys technology, creativity, and continuous improvement. I'm learning how to turn problems into practical solutions one project at a time.</p>
+          <p>I believe progress comes from staying curious, trying new things, and being willing to learn from mistakes. This website is a quick glimpse of what I enjoy and what I'm working toward.</p>
+          <div class="facts">
+            <div class="fact"><span class="fact-icon">⌖</span><div><small>Based in</small><strong>Philippines</strong></div></div>
+            <div class="fact"><span class="fact-icon">▱</span><div><small>Education</small><strong>IT Student</strong></div></div>
+            <div class="fact"><span class="fact-icon">↗</span><div><small>Mindset</small><strong>Always learning</strong></div></div>
+          </div>
+        </article>
+        <article class="skills-card reveal" id="skills">
+          <div class="card-heading"><span class="section-icon">⚙</span><h2>My Skills</h2><span class="heading-tag">IN PROGRESS</span></div>
+          <p class="muted">Skills grow with practice. Here's what I'm exploring:</p>
+          <div class="skill"><div class="skill-label"><span>HTML &amp; CSS</span><span>Learning</span></div><div class="skill-track"><span style="--level:82%;--skill-color:#7865ff"></span></div></div>
+          <div class="skill"><div class="skill-label"><span>JavaScript</span><span>Learning</span></div><div class="skill-track"><span style="--level:60%;--skill-color:#38c9e8"></span></div></div>
+          <div class="skill"><div class="skill-label"><span>C# / Windows Forms</span><span>Practicing</span></div><div class="skill-track"><span style="--level:68%;--skill-color:#ff6496"></span></div></div>
+          <div class="skill"><div class="skill-label"><span>Problem Solving</span><span>Growing</span></div><div class="skill-track"><span style="--level:76%;--skill-color:#ffb45e"></span></div></div>
+          <div class="skill"><div class="skill-label"><span>Communication</span><span>Growing</span></div><div class="skill-track"><span style="--level:72%;--skill-color:#63e6b0"></span></div></div>
+          <p class="skill-footnote">These are self-assessments, not official test scores.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section hobbies-section" id="hobbies">
+      <div class="section-title-row reveal">
+        <div><p class="section-kicker">OFF THE SCREEN, TOO</p><h2><span class="section-icon">♡</span> Things I Enjoy</h2><p class="muted">A few interests that keep life fun and balanced.</p></div>
+        <span class="interest-count">05 INTERESTS</span>
+      </div>
+      <div class="hobby-grid">
+        <button class="hobby-card reveal" data-hobby="coding" aria-label="Learn more about coding">
+          <div class="hobby-art art-code"><span>&lt;/&gt;</span><i>0101<br>1010<br>0110</i></div><div class="hobby-info"><h3>💻 Coding</h3><p>Building useful things, one line at a time.</p><span class="card-more">Tap to discover ↗</span></div>
+        </button>
+        <button class="hobby-card reveal" data-hobby="music" aria-label="Learn more about music">
+          <div class="hobby-art art-music"><span>♫</span><i>♪ &nbsp; ♬ &nbsp; ♪</i></div><div class="hobby-info"><h3>🎧 Music</h3><p>A soundtrack for every mood and moment.</p><span class="card-more">Tap to discover ↗</span></div>
+        </button>
+        <button class="hobby-card reveal" data-hobby="gaming" aria-label="Learn more about gaming">
+          <div class="hobby-art art-game"><span>⌘</span><i>PLAYER 1<br>READY?</i></div><div class="hobby-info"><h3>🎮 Gaming</h3><p>Having fun, thinking fast, and teaming up.</p><span class="card-more">Tap to discover ↗</span></div>
+        </button>
+        <button class="hobby-card reveal" data-hobby="learning" aria-label="Learn more about learning">
+          <div class="hobby-art art-learn"><span>✧</span><i>IDEA<br>→ CREATE</i></div><div class="hobby-info"><h3>📚 Learning</h3><p>Discovering new skills and fresh ideas.</p><span class="card-more">Tap to discover ↗</span></div>
+        </button>
+        <button class="hobby-card reveal" data-hobby="friends" aria-label="Learn more about time with friends">
+          <div class="hobby-art art-friends"><span>☻</span><i>GOOD<br>MEMORIES</i></div><div class="hobby-info"><h3>🤝 Friends</h3><p>Good conversations and better memories.</p><span class="card-more">Tap to discover ↗</span></div>
+        </button>
+      </div>
+      <div class="fun-fact reveal"><span class="bulb">✦</span><div><strong>Fun fact about me</strong><p id="funFact">I believe small improvements can lead to big results.</p></div><button id="factButton" class="round-button" aria-label="Show another fun fact" title="Another fun fact">↻</button></div>
+    </section>
+
+    <section class="quote-section">
+      <div class="quote-stars" aria-hidden="true">✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦</div>
+      <blockquote>“The secret of getting ahead is getting started.”</blockquote>
+      <p> Mark Twain</p>
+      <div class="quote-line"></div>
+    </section>
+
+    <section class="section contact-section" id="contact">
+      <div class="contact-main reveal"><p class="section-kicker">LET'S MAKE SOMETHING GREAT</p><h2>Let's Connect<span class="gradient-text">.</span></h2><p>Have an idea, a project, or just want to say hello? I'd be happy to hear from you.</p><a class="btn btn-primary" href="mailto:your.email@example.com" id="emailLink">Say hello <span>↗</span></a></div>
+      <div class="contact-side reveal"><div class="contact-detail"><span>✉</span><div><small>Email</small><a href="mailto:your.email@example.com" id="emailText">your.email@example.com</a></div></div><div class="contact-detail"><span>⌘</span><div><small>Favorite motto</small><strong>Stay curious. Keep creating.</strong></div></div><div class="socials"><a href="#contact" aria-label="GitHub profile" title="Add your GitHub link">GH</a><a href="#contact" aria-label="LinkedIn profile" title="Add your LinkedIn link">in</a><a href="#contact" aria-label="Instagram profile" title="Add your Instagram link">◎</a></div></div>
+    </section>
+  </main>
+  <footer><span>© <span id="year"></span> <span data-name>YOUR NAME</span>. Made with curiosity and ☕</span><a href="#home">Back to top ↑</a></footer>
+
+  <dialog id="hobbyDialog" class="hobby-dialog">
+    <button class="dialog-close" id="dialogClose" aria-label="Close dialog">×</button>
+    <div class="dialog-symbol" id="dialogSymbol">✧</div><p class="section-kicker">A LITTLE MORE ABOUT ME</p><h2 id="dialogTitle">Coding</h2><p id="dialogBody"></p><button class="btn btn-primary" id="dialogOkay">Nice! <span>✦</span></button>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
