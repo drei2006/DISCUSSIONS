@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keith Marten Alaan | Portfolio</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+  :root{--accent:#2563eb;--dark:#0f172a;--light:#f8fafc;--card:#1e293b;--glow:#3b82f6;}
+  body{background:linear-gradient(135deg,var(--dark) 0%,#1a2d4f 100%);color:var(--light);min-height:100vh;overflow-x:hidden;}
+
+  .bg-particles{position:fixed;inset:0;pointer-events:none;z-index:0;}
+  .particle{position:absolute;width:4px;height:4px;background:rgba(255,255,255,0.15);border-radius:50%;animation:float 12s infinite ease-in-out;}
+  @keyframes float{0%{transform:translateY(100vh) rotate(0deg);opacity:0;}20%{opacity:1;}100%{transform:translateY(-10vh) rotate(360deg);opacity:0;}}
+
+  .container{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem;}
+  
+  .hero{text-align:center;padding:2rem 1rem 3rem;animation:fadeUp 0.8s ease-out forwards;opacity:0;transform:translateY(20px);}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+  
+  .avatar{width:140px;height:140px;border-radius:50%;border:3px solid var(--accent);box-shadow:0 0 25px var(--glow);margin-bottom:1.5rem;object-fit:cover;animation:pulse 2.5s infinite ease-in-out;cursor:pointer;transition:transform 0.2s ease;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 25px var(--glow);}50%{box-shadow:0 0 35px var(--glow),0 0 50px rgba(37,99,235,0.4);}}
+  
+  h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:0.5rem;}
+  .name-highlight{background:linear-gradient(90deg,#60a5fa,var(--accent));-webkit-background-clip:text;color:transparent;}
+  .tagline{font-size:1.1rem;color:#94a3b8;margin-bottom:1rem;}
+  .typing{color:#bfdbfe;border-right:2px solid var(--accent);padding-right:4px;animation:blink 0.7s step-end infinite;display:inline;}
+  @keyframes blink{50%{border-color:transparent;}}
+
+  .stats{display:flex;justify-content:center;gap:2rem;margin:1.5rem 0;flex-wrap:wrap;}
+  .stat-item{text-align:center;}
+  .stat-num{font-size:1.8rem;font-weight:bold;color:#93c5fd;}
+  .stat-label{font-size:0.85rem;color:#94a3b8;}
+
+  .section{background:var(--card);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 8px 30px rgba(0,0,0,0.3);transform:translateY(30px);opacity:0;transition:all 0.6s ease-out;}
+  .section.visible{transform:translateY(0);opacity:1;}
+  .section:hover{transform:translateY(-3px);box-shadow:0 12px 35px rgba(37,99,235,0.2);}
+  .section h2{font-size:1.2rem;margin-bottom:1rem;color:#93c5fd;display:flex;align-items:center;gap:0.5rem;}
+
+  .skill-bar{height:10px;background:#334155;border-radius:5px;margin:0.7rem 0;overflow:hidden;}
+  .skill-fill{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);width:0%;border-radius:5px;transition:width 1.2s ease-out;}
+
+  /* --- UPDATED INTEREST TAGS --- */
+  .tags{display:flex;flex-wrap:wrap;gap:0.7rem;margin-bottom:1rem;}
+  .tag{background:rgba(37,99,235,0.2);border:1px solid rgba(96,165,250,0.3);padding:0.6rem 1.2rem;border-radius:24px;transition:all 0.3s ease;cursor:pointer;}
+  .tag:hover{background:rgba(37,99,235,0.5);transform:scale(1.08);box-shadow:0 4px 15px rgba(37,99,235,0.25);}
+  .tag.active{background:rgba(37,99,235,0.6);border-color:#93c5fd;}
+  
+  .quote-box{background:rgba(37,99,235,0.15);padding:1.2rem;border-radius:10px;border-left:3px solid var(--accent);margin-top:1rem;min-height:70px;transition:all 0.3s ease;opacity:0;transform:translateY(10px);}
+  .quote-box.show{opacity:1;transform:translateY(0);}
+  .quote-text{font-style:italic;color:#dbeafe;line-height:1.5;}
+  .quote-source{margin-top:0.5rem;font-size:0.85rem;color:#93c5fd;}
+
+  .fact-box{background:rgba(37,99,235,0.15);padding:1rem;border-radius:10px;border-left:3px solid var(--accent);margin-top:0.5rem;min-height:60px;transition:all 0.4s ease;}
+  .fact-btn{margin-top:0.8rem;padding:0.6rem 1.2rem;background:var(--accent);border:none;border-radius:8px;color:white;cursor:pointer;transition:all 0.3s ease;}
+  .fact-btn:hover{background:#1d4ed8;transform:scale(1.05);}
+
+  footer{text-align:center;padding:1rem;color:#64748b;font-size:0.85rem;}
+  p{line-height:1.6rem;}
+</style>
+</head>
+<body>
+<div class="bg-particles" id="particles"></div>
+
+<div class="container">
+  <section class="hero">
+    <img src="keith.jpg" alt="Keith Marten Alaan" class="avatar" id="profilePic">
+    <h1>Hi, I'm <span class="name-highlight">Keith Marten Alaan</span></h1>
+    <p class="tagline">IT Student • Developer • Tech Enthusiast</p>
+    <p class="tagline">I love building things that work & look good → <span class="typing" id="typer"></span></p>
+    
+    <div class="stats">
+      <div class="stat-item"><div class="stat-num" id="years">0</div><div class="stat-label">Years Learning</div></div>
+      <div class="stat-item"><div class="stat-num" id="projects">0</div><div class="stat-label">Projects Built</div></div>
+      <div class="stat-item"><div class="stat-num" id="coffee">0</div><div class="stat-label">Cups of ☕</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>👤 About Me</h2>
+    <p>I'm Keith passionate about technology, coding, and user centered design. I believe great tech should be easy to use and enjoyable to interact with. I'm currently sharpening my skills in web development, programming, and Human-Computer Interaction to build digital experiences that truly help people. Based in Cebu City, Philippines, I'm always eager to learn, create, and collaborate.</p>
+  </section>
+
+  <section class="section" id="skillsSec">
+    <h2>🛠️ Skills</h2>
+    <p>HTML & CSS</p>
+    <div class="skill-bar"><div class="skill-fill" data-width="85"></div></div>
+    <p>JavaScript</p>
+    <div class="skill-bar"><div class="skill-fill" data-width="75"></div></div>
+    <p>C# / .NET</p>
+    <div class="skill-bar"><div class="skill-fill" data-width="70"></div></div>
+    <p>UI/UX & HCI</p>
+    <div class="skill-bar"><div class="skill-fill" data-width="80"></div></div>
+    <p>Networking & Systems</p>
+    <div class="skill-bar"><div class="skill-fill" data-width="65"></div></div>
+  </section>
+
+  <!-- === CLICKABLE INTERESTS WITH QUOTES === -->
+  <section class="section">
+    <h2>🚀 Interests & Hobbies</h2>
+    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:0.8rem;">Click any tag to see what it means to me 💡</p>
+    
+    <div class="tags">
+      <span class="tag" data-interest="coding">💻 Coding</span>
+      <span class="tag" data-interest="games">🎮 Video Games</span>
+      <span class="tag" data-interest="networking">🌐 Networking</span>
+      <span class="tag" data-interest="research">📖 Tech Research</span>
+      <span class="tag" data-interest="music">🎵 Music</span>
+      <span class="tag" data-interest="exploring">✈️ Exploring</span>
+      <span class="tag" data-interest="photography">📷 Photography</span>
+      <span class="tag" data-interest="problemsolving">🧩 Problem Solving</span>
+    </div>
+    
+    <div class="quote-box" id="quoteBox">
+      <p class="quote-text" id="quoteText">Select a tag above to see my thoughts ✨</p>
+      <p class="quote-source" id="quoteSource"></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>✨ Fun Facts About Me</h2>
+    <div class="fact-box" id="factBox">Click below to discover something fun!</div>
+    <button class="fact-btn" id="nextFact">Tell me another fact →</button>
+  </section>
+
+  <section class="section">
+    <h2>📬 Connect</h2>
+    <p>📍 Based in Cebu City, Philippines 🇵🇭</p>
+    <p>💌 Email: keithalaan7@email.com</p>
+    <p style="margin-top:0.5rem;">Always open to collaborate & learn together!</p>
+  </section>
+
+  <footer>
+    Made with 💙 by Keith Marten Alaan
+  </footer>
+</div>
+
+<script>
+//  Typing effect 
+const phrases = ["Let's build something cool.", "Design matters.", "Code with purpose.", "Learning every day."];
+let phraseIdx = 0, charIdx = 0, isDel = false;
+const typer = document.getElementById('typer');
+function type(){
+  const curr = phrases[phraseIdx];
+  if(!isDel){
+    typer.textContent = curr.slice(0, ++charIdx);
+    if(charIdx === curr.length){ isDel = true; setTimeout(type, 2000); return; }
+  }else{
+    typer.textContent = curr.slice(0, --charIdx);
+    if(charIdx === 0){ isDel = false; phraseIdx = (phraseIdx+1)%phrases.length; }
+  }
+  setTimeout(type, isDel ? 60 : 100);
+}
+type();
+
+//  Background particles 
+const pContainer = document.getElementById('particles');
+for(let i=0; i<40; i++){
+  const p = document.createElement('div');
+  p.classList.add('particle');
+  p.style.left = `${Math.random()*100}%`;
+  p.style.animationDelay = `${Math.random()*12}s`;
+  p.style.animationDuration = `${10+Math.random()*8}s`;
+  pContainer.appendChild(p);
+}
+
+//  Counter animation 
+function countUp(elId, target, dur=2000){
+  const el = document.getElementById(elId);
+  let start=0;
+  const step = 16;
+  const totalSteps = dur/step;
+  const inc = target/totalSteps;
+  const timer = setInterval(()=>{
+    start += inc;
+    if(start >= target){ el.textContent = target; clearInterval(timer); }
+    else el.textContent = Math.floor(start);
+  }, step);
+}
+setTimeout(()=>{
+  countUp('years', 3);
+  countUp('projects', 4);
+  countUp('coffee', 99);
+}, 500);
+
+//  Scroll reveal 
+const sections = document.querySelectorAll('.section');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(e.target.id === 'skillsSec'){
+        document.querySelectorAll('.skill-fill').forEach(bar => {
+          bar.style.width = bar.dataset.width + '%';
+        });
+      }
+    }
+  });
+}, {threshold:0.2});
+sections.forEach(s => obs.observe(s));
+
+//  INTERESTS + QUOTES DATA 
+const interestQuotes = {
+  coding: {
+    text: "Code is poetry written in logic. Every line is a chance to create something that didn't exist before.",
+    source: " Keith"
+  },
+  games: {
+    text: "Games don't just entertain — they teach us strategy, empathy, and that it's okay to try again after we fail.",
+    source: " Keith"
+  },
+  networking: {
+    text: "Everything is connected. Whether it's computers or people, the strongest systems are built on good links.",
+    source: " Keith"
+  },
+  research: {
+    text: "The best way to predict the future is to understand what's being built today. Curiosity never goes out of style.",
+    source: " Keith"
+  },
+  music: {
+    text: "Music is like coding — it has structure, rhythm, and harmony. Both are about creating feeling from patterns.",
+    source: " Keith"
+  },
+  exploring: {
+    text: "Step outside your comfort zone. That's where the real learning happens — whether in Cebu or beyond.",
+    source: " Keith"
+  },
+  photography: {
+    text: "A photo freezes a moment that will never come again. It reminds us to appreciate the beauty in everyday things.",
+    source: " Keith"
+  },
+  problemsolving: {
+    text: "Every problem is just a puzzle waiting to be solved. Persistence is the most powerful tool we have.",
+    source: " Keith"
+  }
+};
+
+//  Click handler for interest tags 
+const tags = document.querySelectorAll('.tag');
+const quoteBox = document.getElementById('quoteBox');
+const quoteText = document.getElementById('quoteText');
+const quoteSource = document.getElementById('quoteSource');
+
+tags.forEach(tag => {
+  tag.addEventListener('click', () => {
+    // Remove active state from all
+    tags.forEach(t => t.classList.remove('active'));
+    // Add to clicked
+    tag.classList.add('active');
+    
+    // Get the quote
+    const key = tag.getAttribute('data-interest');
+    const quote = interestQuotes[key];
+    
+    // Fade out, update, fade in
+    quoteBox.classList.remove('show');
+    setTimeout(() => {
+      quoteText.textContent = quote.text;
+      quoteSource.textContent = quote.source;
+      quoteBox.classList.add('show');
+    }, 150);
+  });
+});
+
+//  Fun facts 
+const facts = [
+  "I started coding because I wanted to make my own games.",
+  "I believe good design is invisible it just works.",
+  "Cebu's sunsets are my favourite inspiration spot.",
+  "I once stayed up all night just to finish one feature.",
+  "I love learning how things connect networks or ideas.",
+  "My goal: build tech that makes life easier for people.",
+  "I debug better after a good cup of coffee."
+];
+let fIdx = 0;
+const factBoxEl = document.getElementById('factBox');
+document.getElementById('nextFact').addEventListener('click', () => {
+  factBoxEl.style.opacity = 0;
+  setTimeout(() => {
+    factBoxEl.textContent = facts[fIdx];
+    fIdx = (fIdx + 1) % facts.length;
+    factBoxEl.style.opacity = 1;
+  }, 200);
+});
+factBoxEl.textContent = facts[0];
+fIdx = 1;
+
+//  Profile pic click 
+document.getElementById('profilePic').addEventListener('click', function(){
+  this.style.transform = 'scale(1.1)';
+  setTimeout(()=> this.style.transform = '', 200);
+});
+</script>
+</body>
+</html>
